@@ -4,8 +4,8 @@
  * @subpackage Base_theme
  */
 ?>
-<?php if ( is_active_sidebar('Right Sidebar') ) : ?>
-<div id="sidebar">
-	<?php dynamic_sidebar( 'Right Sidebar' ); ?>
+<div class="container footer_inner clearfix"> 
+<?php
+	if (is_active_sidebar('footer-sidebar')) dynamic_sidebar( 'footer-sidebar' );
+?>
 </div>
-<?php endif; ?>

@@ -4,6 +4,11 @@
  * @subpackage Base_Theme
  */
 // =========================================================
+// REQUIRED
+// =========================================================
+include_once 'includes/walker_tesserasoft.php';
+include_once 'includes/post_type_factory.php';
+// =========================================================
 // CONSTANTS
 // =========================================================
 define('TDU', get_bloginfo('template_url'));
@@ -12,9 +17,6 @@ define('TDU', get_bloginfo('template_url'));
 // =========================================================
 add_filter( 'use_default_gallery_style', '__return_false' );
 add_filter('nav_menu_css_class', 'cheangeMenuClasses');
-add_filter('the_content', 'filterTemplateURL');
-add_filter('get_the_content', 'filterTemplateURL');
-add_filter('widget_text', 'filterTemplateURL');
 add_filter('default_content', 'themeDefaultContent');
 add_filter('the_content', 'templateUrl');
 add_filter('get_the_content', 'templateUrl');
@@ -40,39 +42,24 @@ register_sidebar(array(
 	'before_widget' => '<div class="widget %2$s" id="%1$s">',
 	'after_widget'  => '</div>',
 	'before_title'  => '<h3>',
-	'after_title'   => '</h3>'
-));
+	'after_title'   => '</h3>'));
+
+register_sidebar(array(
+	'id'            => 'footer-sidebar',
+	'name'          => 'Footer Sidebar',
+	'before_widget' => '<div class="grid_3 %2$s" id="%1$s">',
+	'after_widget'  => '</div><!-- End -->',
+	'before_title'  => '<h4>',
+	'after_title'   => '</h4>'));
 
 register_nav_menus( array(
-	'primary_nav' => __( 'Primary Navigation', 'theme' ),
-	'top_nav'     => __( 'Top Navigation', 'theme' ),
-	'bottom_nav'  => __( 'Bottom Navigation', 'theme' )
+	'primary_nav' => __( 'Primary Navigation', 'theme' ),	
+	'footer_nav'  => __( 'Footer Navigation', 'theme' )
 ) );
 
 /**
- * Change menu classes
- * @param  string $css_classes 
- * @return string              
+ * Theme helper 
  */
-function cheangeMenuClasses($css_classes)
-{
-	$css_classes = str_replace("current-menu-item", "current-menu-item active", $css_classes);
-	$css_classes = str_replace("current-menu-parent", "current-menu-parent active", $css_classes);
-	return $css_classes;
-}
-
-
-function filterTemplateURL($text) 
-{
-	return str_replace('[template-url]',get_bloginfo('template_url'), $text);
-}
-
-function templateUrl($text) 
-{
-	return str_replace('[template-url]',get_bloginfo('template_url'), $text);
-}
-
-
 function themePagingNav() 
 {
 	global $wp_query;
@@ -97,6 +84,9 @@ function themePagingNav()
 	<?php
 }
 
+/**
+ * Theme helper
+ */
 function themePostNav() 
 {
 	global $post;
@@ -120,6 +110,11 @@ function themePostNav()
 	<?php
 }
 
+/**
+ * Theme helper
+ * @param  boolean $echo
+ * @return string
+ */
 function themeEntryDate( $echo = true ) 
 {
 	if ( has_post_format( array( 'chat', 'status' ) ) )
@@ -139,6 +134,10 @@ function themeEntryDate( $echo = true )
 
 	return $date;
 }
+
+/**
+ * Theme helper
+ */
 function themeEntryMeta() 
 {
 	if ( is_sticky() && is_home() && ! is_paged() )
@@ -169,14 +168,87 @@ function themeEntryMeta()
 	}
 }
 
-function scriptsMethod() 
+/**
+ * Change menu classes
+ * @param  string $css_classes 
+ * @return string              
+ */
+function cheangeMenuClasses($css_classes)
 {
-	
+	$css_classes = str_replace("current-menu-item", "current-menu-item active", $css_classes);
+	$css_classes = str_replace("current-menu-parent", "current-menu-parent active", $css_classes);
+	return $css_classes;
 }
 
+/**
+ * Template url - short code for widget's and content
+ * @param  string $text 
+ * @return 
+ */
+function templateUrl($text) 
+{
+	return str_replace('[template-url]',get_bloginfo('template_url'), $text);
+}
 
+/**
+ * Add scripts and styles to HTML header
+ */
+function scriptsMethod() 
+{
+	// =========================================================
+	// STYLES
+	// =========================================================
+	wp_enqueue_style('main', get_bloginfo('stylesheet_url'));
+	wp_enqueue_style('google_fonts', 'http://fonts.googleapis.com/css?family=Arimo:400,400italic');
+	wp_enqueue_style('navigation', TDU.'/css/navigation.css');
+	wp_enqueue_style('jquery-ui-1.10.3.custom', TDU.'/css/jquery-ui-1.10.3.custom.css');
+	wp_enqueue_style('flexslider', TDU.'/css/flexslider.css');
+	wp_enqueue_style('jcarousel', TDU.'/css/jcarousel.css');
+	wp_enqueue_style('prettyPhoto', TDU.'/css/prettyPhoto.css');
+	// =========================================================
+	// SCRIPTS
+	// =========================================================
+	wp_deregister_script('jquery');
+	wp_enqueue_script('jquery', TDU.'/js/jquery-1.9.1.min.js');
+	wp_enqueue_script('modernizr', TDU.'/js/modernizr.js', array('jquery'));
+	wp_enqueue_script('flexslider', TDU.'/js/jquery.flexslider-min.js');
+	wp_enqueue_script('main', TDU.'/js/main.js', array('jquery'));
+	wp_enqueue_script('jcarousel', TDU.'/js/jquery.jcarousel.min.js');
+	wp_enqueue_script('prettyPhoto', TDU.'/js/jquery.prettyPhoto.js');
+	wp_enqueue_script('validate', TDU.'/js/jquery.validate.js');
+	wp_enqueue_script('form', TDU.'/js/jquery.form.js');
+	wp_enqueue_script('jquery.cycle.all', TDU.'/js/jquery.cycle.all.js');
+	wp_enqueue_script('jquery-ui-1.10.3.custom', TDU.'/js/jquery-ui-1.10.3.custom.js');
+	wp_enqueue_script('jquery.easing.1.3', TDU.'/js/jquery.easing.1.3.js');
+	wp_enqueue_script('jquery.supersubs', TDU.'/js/jquery.supersubs.js');
+	wp_enqueue_script('jquery.superfish', TDU.'/js/jquery.superfish.js');
+	wp_enqueue_script('custom', TDU.'/js/custom.js');
+	wp_enqueue_script('addthis', '//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5316dc2271b78736');
+
+
+	wp_localize_script('main', 'defaults', array( 
+			'ajaxurl' => TDU.'/includes/ajax.php',
+			'tdu'     => TDU));
+}
+
+/**
+ * Default content for new post
+ * @param  string $content
+ * @return string
+ */
 function themeDefaultContent( $content ) 
 {
 	$content = "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ultrices, magna non porttitor commodo, massa nibh malesuada augue, non viverra odio mi quis nisl. Nullam convallis tincidunt dignissim. Nam vitae purus eget quam adipiscing aliquam. Sed a congue libero. Quisque feugiat tincidunt tortor sed sodales. Etiam mattis, justo in euismod volutpat, ipsum quam aliquet lectus, eu blandit neque libero eu justo. Nunc nibh nulla, accumsan in imperdiet vel, pretium in metus. Aenean in lacus at lacus imperdiet euismod in non nulla. Mauris luctus sodales metus, ac porttitor est lacinia non. Proin diam urna, feugiat at adipiscing in, varius vel mi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Sed tincidunt commodo massa interdum iaculis.</p><!--more--><p>Aliquam metus libero, elementum et malesuada fermentum, sagittis et libero. Nullam quis odio vel ipsum facilisis viverra id sit amet nibh. Vestibulum ullamcorper luctus lacinia. Etiam accumsan, orci eu blandit vestibulum, purus ante malesuada purus, non commodo odio ligula quis turpis. Vestibulum scelerisque feugiat diam, eu mollis elit cursus nec. Quisque commodo ultricies scelerisque. In hac habitasse platea dictumst. Nullam hendrerit rhoncus lacus, id lobortis leo condimentum sed. Nulla facilisi. Quisque ut velit a neque feugiat rutrum at sit amet neque. Sed at libero dictum est aliquam porttitor. Morbi tempor nulla ut tellus malesuada cursus condimentum metus luctus. Quisque dui neque, lobortis id vehicula et, tincidunt eget justo. Morbi vulputate velit eget leo fermentum convallis. Nam mauris risus, consectetur a posuere ultricies, elementum non orci.</p><p>Ut viverra elit vel mauris venenatis gravida ut quis mi. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eleifend urna sit amet nisi scelerisque pretium. Nulla facilisi. Donec et odio vel sem gravida cursus vestibulum dapibus enim. Pellentesque eget aliquet nisl. In malesuada, quam ac interdum placerat, elit metus consequat lorem, non consequat felis ipsum et ligula. Sed varius interdum volutpat. Vestibulum et libero nisi. Maecenas sit amet risus et sapien lobortis ornare vel quis ipsum. Nam aliquet euismod aliquam. Donec velit purus, convallis ac convallis vel, malesuada vitae erat.</p>";
 	return $content;
 }
+
+// =========================================================
+// POST TYPES
+// =========================================================
+
+$testimonial_args              = array('supports' => array("title", "editor"));
+$testimonial                   = new PostTypeFactory('testimonial', $testimonial_args);
+$testimonial->meta_box_context = 'side';
+$testimonial->addMetaBox('Testimonial', array(
+	'name' => 'text',
+	'url'  => 'text'));

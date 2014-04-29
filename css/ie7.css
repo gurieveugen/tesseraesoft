@@ -1,0 +1,16 @@
+.box_inner {
+	padding: 30px 30px 10px 30px;
+}
+form#subform input.sub_submit {
+	width: 85px;
+	text-align: center;
+}
+.form_button {
+	padding: 6px 10px 6px 10px !important;
+}
+form#contactform input.submit {	width: inherit;
+	text-align: center;
+}
+form#contactform .form_button {	width: 100px; margin: 0 auto;
+	text-align: center; padding: 6px 10px 2px 10px !important;
+}
