@@ -41,7 +41,7 @@ class PostTypeFactory{
         $this->init(array(&$this, "registerPostType"));
 
         add_action('save_post', array(&$this, 'savePost'));
-        add_action('post_edit_form_tag', function() { echo ' enctype="multipart/form-data"'; });
+        add_action('post_edit_form_tag', function() { echo ' enctype="multipart/form-data"'; });        
     }
 
     /**
@@ -131,9 +131,50 @@ class PostTypeFactory{
     }
 
     public function configureMetaBox()
-    {
+    {   
         $id = strtolower(str_replace(' ', '_', $this->meta_box_title));
         add_meta_box($id, $this->meta_box_title, array(&$this, 'renderMetaBox'), $this->post_type_name, $this->meta_box_context, 'default', array($this->meta_box_form_fields));
+
+        add_filter('manage_edit-'.$this->post_type_name.'_columns', array(&$this, 'columnThumb'));   
+        add_action('manage_'.$this->post_type_name.'_posts_custom_column', array($this, 'columnThumbShow'), 10, 2);           
+    }
+
+    /**
+     * Register new columns
+     * @param  array $columns 
+     * @return array
+     */
+    public function columnThumb($columns)
+    {
+        $arr = array();
+        foreach ($this->meta_box_form_fields as $key => &$value) 
+        {
+            $arr[$key] = ucwords($key);
+        }
+        
+        return array_merge($columns, $arr);
+    }
+
+    /**
+     * Display new column
+     * @param  string  $column  
+     * @param  integer $post_id           
+     */
+    public function columnThumbShow($column, $post_id)
+    {          
+        $display_types = array(
+            "text"     => "%s",
+            "textarea" => "%s",
+            "checkbox" => "%s",
+            "select"   => '%s',
+            "file"     => "%s");
+
+        if(isset($this->meta_box_form_fields[$column]))
+        {
+            $meta = get_post_meta($post_id, $this->formatControlName($column), true);
+            $type = $this->meta_box_form_fields[$column];
+            printf($display_types[$type], $meta);
+        }       
     }
 
     public function renderMetaBox($post, $data)
@@ -142,13 +183,12 @@ class PostTypeFactory{
 
         wp_nonce_field(plugin_basename(__FILE__), 'jw_nonce');
 
-       
         $inputs = $data['args'][0];
         $meta   = get_post_custom($post->ID);
 
         foreach ($inputs as $name => $type) 
         {
-            $id_name = $data['id'] . '_' . strtolower(str_replace(' ', '_', $name));
+            $id_name = $this->formatControlName($name);
             if (is_array($inputs[$name])) 
             {
                 if (strtolower($inputs[$name][0]) === 'select') 
@@ -265,5 +305,68 @@ class PostTypeFactory{
             $_SESSION['taxonomy_data'] = array();
 
         }
+    }
+
+    /**
+     * Get all meta data from post
+     * @return mixed
+     */
+    public function getMeta($post_id)
+    {
+        $arr  = array();
+        $meta = get_post_custom($post_id);
+        if($this->meta_box_form_fields)
+        {
+            foreach ($this->meta_box_form_fields as $key => &$value) 
+            {
+                $name = $this->formatControlName($key);
+                if(isset($meta[$name])) $arr[$key] = $meta[$name][0];
+            }
+            return $arr;
+        }
+        return false;
+    }
+
+    /**
+     * Get this post type items
+     * @param  array  $args
+     * @return array
+     */
+    public function getItems($args = array())
+    {
+        $defaults = array(
+            'posts_per_page'   => -1,
+            'offset'           => 0,
+            'category'         => '',
+            'orderby'          => 'post_date',
+            'order'            => 'DESC',
+            'include'          => '',
+            'exclude'          => '',
+            'meta_key'         => '',
+            'meta_value'       => '',
+            'post_type'        => $this->post_type_name,
+            'post_mime_type'   => '',
+            'post_parent'      => '',
+            'post_status'      => 'publish',
+            'suppress_filters' => true );
+
+        $args  = array_merge($defaults, $args);
+        $posts = get_posts($args);
+
+        foreach ($posts as &$post) 
+        {
+            $post->meta = $this->getMeta($post->ID);
+        }
+        return $posts;
+    }
+
+    /**
+     * Format name to web control
+     * @param  string $name
+     * @return string      
+     */
+    private function formatControlName($name)
+    {
+        return $this->post_type_name.'_'.strtolower(str_replace(' ', '_', $name)); 
     }
 }

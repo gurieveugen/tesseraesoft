@@ -6,8 +6,10 @@
 // =========================================================
 // REQUIRED
 // =========================================================
-include_once 'includes/walker_tesserasoft.php';
-include_once 'includes/post_type_factory.php';
+require_once 'includes/walker_tesserasoft.php';
+require_once 'includes/post_type_factory.php';
+require_once 'includes/widget_testimonials.php';
+require_once 'includes/widget_twitter_feed.php';
 // =========================================================
 // CONSTANTS
 // =========================================================
@@ -15,19 +17,20 @@ define('TDU', get_bloginfo('template_url'));
 // =========================================================
 // HOOKS
 // =========================================================
-add_filter( 'use_default_gallery_style', '__return_false' );
+add_filter('use_default_gallery_style', '__return_false');
 add_filter('nav_menu_css_class', 'cheangeMenuClasses');
 add_filter('default_content', 'themeDefaultContent');
 add_filter('the_content', 'templateUrl');
 add_filter('get_the_content', 'templateUrl');
 add_filter('widget_text', 'templateUrl');
 add_action('wp_enqueue_scripts', 'scriptsMethod');
+add_action('widgets_init', 'registerWidgets');
 // =========================================================
 // THEME SUPPORT
 // =========================================================
-add_theme_support( 'post-thumbnails' );
-add_theme_support( 'automatic-feed-links' );
-add_theme_support( 'html5', array( 'search-form', 'comment-form', 'comment-list' ) );
+add_theme_support('post-thumbnails');
+add_theme_support('automatic-feed-links');
+add_theme_support('html5', array( 'search-form', 'comment-form', 'comment-list'));
 // =========================================================
 // IMAGES SETTINGS
 // =========================================================
@@ -52,10 +55,21 @@ register_sidebar(array(
 	'before_title'  => '<h4>',
 	'after_title'   => '</h4>'));
 
-register_nav_menus( array(
-	'primary_nav' => __( 'Primary Navigation', 'theme' ),	
-	'footer_nav'  => __( 'Footer Navigation', 'theme' )
-) );
+register_nav_menus(array(
+	'primary_nav' => __('Primary Navigation'),	
+	'footer_nav'  => __('Footer Navigation')));
+
+/**
+ * Register custom widgets
+ */
+function registerWidgets()
+{
+	$widgets = array('Testimonials', 'TwitterFeed');
+	foreach ($widgets as &$widget) 
+	{
+		register_widget($widget);	
+	}
+}
 
 /**
  * Theme helper 
@@ -252,3 +266,4 @@ $testimonial->meta_box_context = 'side';
 $testimonial->addMetaBox('Testimonial', array(
 	'name' => 'text',
 	'url'  => 'text'));
+$GLOBALS['testimonial'] = &$testimonial;
