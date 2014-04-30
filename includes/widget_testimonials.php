@@ -35,9 +35,9 @@ class Testimonials extends WP_Widget {
 				    "<?php echo $testimonial->post_content; ?>"
 				  </p>
 				  <span>
-				    <?php echo $testimonial->meta['name']; ?>
+				    <?php echo $testimonial->meta['testimonial_name']; ?>
 				    <br/>
-				    <?php printf('<a href="%s">%s</a>', $testimonial->meta['url'], $testimonial->meta['url']); ?>
+				    <?php printf('<a href="%s">%s</a>', $testimonial->meta['testimonial_url'], $testimonial->meta['testimonial_url']); ?>
 				  </span>
 				</div>
 				<?php

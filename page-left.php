@@ -1,8 +1,6 @@
 <?php
 /**
- *
- * @package WordPress
- * @subpackage Base_Theme
+ * Template name: Page with left sidebar
  */
 ?>
 <?php 
@@ -28,7 +26,10 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 
 	<!--container starts-->
 	<div class="container clearfix">
-		<?php the_content(); ?>
+		<?php get_sidebar('left'); ?>
+		<div class="grid_8 content">
+			<?php the_content(); ?>	
+		</div>
 	</div>
 	<!--container ends-->
 

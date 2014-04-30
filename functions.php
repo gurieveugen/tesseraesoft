@@ -23,6 +23,8 @@ add_filter('default_content', 'themeDefaultContent');
 add_filter('the_content', 'templateUrl');
 add_filter('get_the_content', 'templateUrl');
 add_filter('widget_text', 'templateUrl');
+remove_filter('the_content', 'wpautop');
+remove_filter('the_excerpt', 'wpautop');
 add_action('wp_enqueue_scripts', 'scriptsMethod');
 add_action('widgets_init', 'registerWidgets');
 // =========================================================
@@ -44,8 +46,16 @@ register_sidebar(array(
 	'name'          => 'Right Sidebar',
 	'before_widget' => '<div class="widget %2$s" id="%1$s">',
 	'after_widget'  => '</div>',
-	'before_title'  => '<h3>',
-	'after_title'   => '</h3>'));
+	'before_title'  => '<h4>',
+	'after_title'   => '</h4>'));
+
+register_sidebar(array(
+	'id'            => 'left-sidebar',
+	'name'          => 'Left Sidebar',
+	'before_widget' => '<div class="widget %2$s" id="%1$s">',
+	'after_widget'  => '</div>',
+	'before_title'  => '<h4>',
+	'after_title'   => '</h4>'));
 
 register_sidebar(array(
 	'id'            => 'footer-sidebar',
@@ -219,6 +229,7 @@ function scriptsMethod()
 	wp_enqueue_style('flexslider', TDU.'/css/flexslider.css');
 	wp_enqueue_style('jcarousel', TDU.'/css/jcarousel.css');
 	wp_enqueue_style('prettyPhoto', TDU.'/css/prettyPhoto.css');
+	wp_enqueue_style('nivoslider', TDU.'/css/nivo-slider.css');
 	// =========================================================
 	// SCRIPTS
 	// =========================================================
@@ -237,6 +248,8 @@ function scriptsMethod()
 	wp_enqueue_script('jquery.supersubs', TDU.'/js/jquery.supersubs.js');
 	wp_enqueue_script('jquery.superfish', TDU.'/js/jquery.superfish.js');
 	wp_enqueue_script('custom', TDU.'/js/custom.js');
+	wp_enqueue_script('nivoslider', TDU.'/js/jquery.nivoslider.js');
+	wp_enqueue_script('quicksand', TDU.'/js/jquery.quicksand.js');
 	wp_enqueue_script('addthis', '//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5316dc2271b78736');
 
 
@@ -260,10 +273,16 @@ function themeDefaultContent( $content )
 // POST TYPES
 // =========================================================
 
-$testimonial_args              = array('supports' => array("title", "editor"));
-$testimonial                   = new PostTypeFactory('testimonial', $testimonial_args);
-$testimonial->meta_box_context = 'side';
-$testimonial->addMetaBox('Testimonial', array(
+$testimonial_args                         = array('supports' => array("title", "editor"));
+$GLOBALS['testimonial']                   = new PostTypeFactory('testimonial', $testimonial_args);
+$GLOBALS['testimonial']->meta_box_context = 'side';
+$GLOBALS['testimonial']->addMetaBox('Testimonial', array(
 	'name' => 'text',
 	'url'  => 'text'));
-$GLOBALS['testimonial'] = &$testimonial;
+
+
+$GLOBALS['page_meta'] = new PostTypeFactory('page');
+$GLOBALS['page_meta']->addMetaBox('Additional info', array('Sub title' => 'text'));
+
+
+

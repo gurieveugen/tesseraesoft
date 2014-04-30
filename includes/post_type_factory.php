@@ -38,7 +38,10 @@ class PostTypeFactory{
         $this->post_type_args   = (array)$post_type_args;
         $this->meta_box_context = 'normal';
         
-        $this->init(array(&$this, "registerPostType"));
+        if(!post_type_exists($this->post_type_name))
+        {
+            $this->init(array(&$this, "registerPostType"));    
+        }
 
         add_action('save_post', array(&$this, 'savePost'));
         add_action('post_edit_form_tag', function() { echo ' enctype="multipart/form-data"'; });        
@@ -320,7 +323,7 @@ class PostTypeFactory{
             foreach ($this->meta_box_form_fields as $key => &$value) 
             {
                 $name = $this->formatControlName($key);
-                if(isset($meta[$name])) $arr[$key] = $meta[$name][0];
+                if(isset($meta[$name])) $arr[$name] = $meta[$name][0];
             }
             return $arr;
         }
@@ -365,7 +368,7 @@ class PostTypeFactory{
      * @param  string $name
      * @return string      
      */
-    private function formatControlName($name)
+    public function formatControlName($name)
     {
         return $this->post_type_name.'_'.strtolower(str_replace(' ', '_', $name)); 
     }

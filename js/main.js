@@ -10,6 +10,30 @@ $(window).load(function () {
         pauseOnHover: true,
         pauseOnAction: true,
     });
+    // =========================================================
+    // Some slider. 
+    // =========================================================
+    $('#slider').nivoSlider({
+        effect: 'fold',
+        slices:15,
+        boxCols:7,
+        boxRows:4,
+        animSpeed:600,
+        pauseTime:5000,
+        captionOpacity:1,
+        directionNav:true,
+        directionNavHide:true,
+        controlNav:false,
+        afterLoad: function(){
+            $(".nivo-caption").animate({right:"50"}, {easing:"easeOutBack", duration: 500})
+        },
+        beforeChange: function(){
+            $(".nivo-caption").animate({right:"-350"}, {easing:"easeInBack", duration: 500})
+        },
+        afterChange: function(){
+            $(".nivo-caption").animate({right:"50"}, {easing:"easeOutBack", duration: 500})
+        }
+    });
 });
 
 $(document).ready(function() {  
@@ -51,4 +75,5 @@ $(document).ready(function() {
     }); 
     //To clear form field on page refresh
     $('#subform #email').val('');
+
 });
