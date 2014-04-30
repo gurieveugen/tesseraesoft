@@ -105,35 +105,43 @@ class WalkertTesseraSoft extends Walker {
 		
 		if($item->title == self::LOGIN_FORM_ITEM_TITLE)
 		{
-			$item_output = '<li class="login_link">           
-					          <!--login_wrapper starts-->
-					          <div class="login_wrapper"> <a href="#" class="login"><span>login</span></a>
-					            <form method="post" id="login_form" action="'.get_bloginfo('url').'/wp-login.php">
-					              <fieldset>
-					                <p>
-					                  <label>Username or email</label>
-					                  <input id="username" name="log" type="text"/>
-					                </p>
-					                <p>
-					                  <label>Password</label>
-					                  <input id="password" name="pwd" type="password"/>
-					                </p>
-					                <p>
-					                  <input class="login_submit" type="submit" value="Log In" name="wp-submit" />
-					                </p>
-					                <div class="clear"></div>
-					                <p class="remember">
-					                  <input id="remember" name="rememberme" type="checkbox" value="forever" />
-					                  <label  class="remember">Remember me</label>
-					                </p>
-					                <p class="registration"></p>
-					                <p class="forgot"><a href="'.wp_registration_url().'">Register</a> | <a href="'.wp_lostpassword_url().'">	Lost your password?</a></p>
-					              </fieldset>
-					            </form>
-					          </div>
-					          <!--login_wrapper ends--> 
-					          
-					        </li>';
+			if(!is_user_logged_in())
+			{
+				$item_output = '<li class="login_link">           
+						          <!--login_wrapper starts-->
+						          <div class="login_wrapper"> <a href="#" class="login"><span>login</span></a>
+						            <form method="post" id="login_form" action="'.get_bloginfo('url').'/wp-login.php">
+						              <fieldset>
+						                <p>
+						                  <label>Username or email</label>
+						                  <input id="username" name="log" type="text"/>
+						                </p>
+						                <p>
+						                  <label>Password</label>
+						                  <input id="password" name="pwd" type="password"/>
+						                </p>
+						                <p>
+						                  <input class="login_submit" type="submit" value="Log In" name="wp-submit" />
+						                </p>
+						                <div class="clear"></div>
+						                <p class="remember">
+						                  <input id="remember" name="rememberme" type="checkbox" value="forever" />
+						                  <label  class="remember">Remember me</label>
+						                </p>
+						                <p class="registration"></p>
+						                <p class="forgot"><a href="'.wp_registration_url().'">Register</a> | <a href="'.wp_lostpassword_url().'">	Lost your password?</a></p>
+						              </fieldset>
+						            </form>
+						          </div>
+						          <!--login_wrapper ends--> 
+						          
+						        </li>';	
+			}
+			else
+			{
+				$item_output = '';
+			}
+			
 		}
 		$output .= apply_filters( 'walker_nav_menu_start_el', $item_output, $item, $depth, $args );
 	}
