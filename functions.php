@@ -10,6 +10,7 @@ require_once 'includes/walker_tesserasoft.php';
 require_once 'includes/post_type_factory.php';
 require_once 'includes/widget_testimonials.php';
 require_once 'includes/widget_twitter_feed.php';
+require_once 'includes/lorem_posts.php';
 // =========================================================
 // CONSTANTS
 // =========================================================
@@ -27,6 +28,9 @@ remove_filter('the_content', 'wpautop');
 remove_filter('the_excerpt', 'wpautop');
 add_action('wp_enqueue_scripts', 'scriptsMethod');
 add_action('widgets_init', 'registerWidgets');
+add_shortcode('faq', 'shortcodeFAQ');
+add_shortcode('knowledgebase', 'shortcodeKnowledgeBase');
+add_shortcode('items', 'shortcodeDisplayItems');
 // =========================================================
 // THEME SUPPORT
 // =========================================================
@@ -68,6 +72,33 @@ register_sidebar(array(
 register_nav_menus(array(
 	'primary_nav' => __('Primary Navigation'),	
 	'footer_nav'  => __('Footer Navigation')));
+
+
+// =========================================================
+// POST TYPES
+// =========================================================
+
+$testimonial_args                         = array('supports' => array("title", "editor"));
+$GLOBALS['testimonial']                   = new PostTypeFactory('testimonial', $testimonial_args);
+$GLOBALS['testimonial']->meta_box_context = 'side';
+$GLOBALS['testimonial']->addMetaBox('Testimonial', array(
+	'name' => 'text',
+	'url'  => 'text'));
+
+
+$GLOBALS['page_meta'] = new PostTypeFactory('page');
+$GLOBALS['page_meta']->addMetaBox('Additional info', array('Sub title' => 'text'));
+
+
+$GLOBALS['faq']            = new PostTypeFactory('faq', array('supports' => array("title", "editor")));
+$GLOBALS['knowledgebase']  = new PostTypeFactory('knowledge base', array('supports' => array("title", "editor")));
+
+// =========================================================
+// GENERATE LOREM POSTS
+// =========================================================
+// $lp = new LoremPosts();
+// $lp->generatePosts(10, 'faq');
+// $lp->generatePosts(10, 'knowledgebase');
 
 /**
  * Register custom widgets
@@ -269,20 +300,65 @@ function themeDefaultContent( $content )
 	return $content;
 }
 
-// =========================================================
-// POST TYPES
-// =========================================================
+/**
+ * SHORT CODE. [faq]
+ * Display faq items.
+ * @param  array $args --- shortcode parameters
+ * @return mixed
+ */
+function shortcodeFAQ($args)
+{
+	$args['post_type'] = 'faq';
 
-$testimonial_args                         = array('supports' => array("title", "editor"));
-$GLOBALS['testimonial']                   = new PostTypeFactory('testimonial', $testimonial_args);
-$GLOBALS['testimonial']->meta_box_context = 'side';
-$GLOBALS['testimonial']->addMetaBox('Testimonial', array(
-	'name' => 'text',
-	'url'  => 'text'));
+	return shortcodeDisplayItems($args);
+}
 
+/**
+ * SHORT CODE. [knowledgebase]
+ * Display knowledgebase items.
+ * @param  array $args --- shortcode parameters
+ * @return mixed
+ */
+function shortcodeKnowledgeBase($args)
+{	
+	$args['post_type'] = 'knowledgebase';
+	return shortcodeDisplayItems($args);
+}
 
-$GLOBALS['page_meta'] = new PostTypeFactory('page');
-$GLOBALS['page_meta']->addMetaBox('Additional info', array('Sub title' => 'text'));
+/**
+ * Short code.
+ * Display custom post type.
+ * Generate accordion HTML code.
+ * @param  array $args --- options array
+ * @return mixed
+ */
+function shortcodeDisplayItems($args)
+{
+	if(!isset($args['post_type'])) return;
+	$pt    = $args['post_type'];
+	$count = isset($args['count']) ? intval($args['count']) : -1;
 
+	$items = $GLOBALS[$pt]->getItems(array('posts_per_page' => $count));
+	$out   = '';
+	if(!$items) return;
 
+	
+	foreach ($items as $item) 
+	{
+		$out.= wrapAccordionItem(get_permalink($item->ID), $item->post_title, $item->post_content);	
+	}
+	return  sprintf('<!--accordion starts--><div class="accordion_wrapper">%s</div><!--accordion ends-->', $out);
+}
 
+/**
+ * Helper function. Wrap accordion item
+ * in to html code
+ * @param  string $url   --- Link to post
+ * @param  string $title --- Post title
+ * @param  string $text  --- Post content
+ * @return string        --- HTML code
+ */
+function wrapAccordionItem($url, $title, $text)
+{
+	return sprintf('<div> <h3><a href="%s">%s</a></h3> <div>%s</div> </div>', $url, $title, $text);
+}
