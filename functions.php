@@ -96,9 +96,17 @@ $GLOBALS['knowledgebase']  = new PostTypeFactory('knowledge base', array('suppor
 // =========================================================
 // GENERATE LOREM POSTS
 // =========================================================
-// $lp = new LoremPosts();
+$lp = new LoremPosts();
+// $lp->deletaAllPosts('faq');
+// $lp->deletaAllPosts('knowledgebase');
 // $lp->generatePosts(10, 'faq');
 // $lp->generatePosts(10, 'knowledgebase');
+// 
+
+// =========================================================
+// LAUNCH SESSION
+// =========================================================
+_session_start();
 
 /**
  * Register custom widgets
@@ -361,4 +369,16 @@ function shortcodeDisplayItems($args)
 function wrapAccordionItem($url, $title, $text)
 {
 	return sprintf('<div> <h3><a href="%s">%s</a></h3> <div>%s</div> </div>', $url, $title, $text);
+}
+
+/**
+ * Start session if session not started
+ */
+function _session_start()
+{
+	if(session_id() == '') 
+	{
+		return session_start();
+	}
+	return false;
 }
