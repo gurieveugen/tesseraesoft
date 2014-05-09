@@ -1,50 +1,31 @@
-<?php
-/**
- *
- * @package WordPress
- * @subpackage Base_Theme
- */
+<?php 
+get_header();
+the_post();
 ?>
-<?php get_header(); ?>
+<!--top_gradient starts-->
+<div class="top_gradient">
+	<div class="container clearfix">
+		<div class="grid_12"> 
 
-<article id="content">
+			<!--page header starts-->
+			<div class="page_header clearfix">
+				<h1><?php the_title(); ?></h1>    
+			</div>
+			<!--page header ends--> 
 
-<?php while ( have_posts() ) : the_post(); ?>
-
-	<div id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
-		<h1 class="entry-title"><?php the_title(); ?></h1>
-		<div class="entry-meta">
-			Posted on 
-			<a href="<?php the_permalink() ?>" rel="bookmark">
-				<span class="entry-date"><?php the_date() ?></span>
-			</a> 
-			by 
-			<span class="author vcard">
-				<a href="<?php echo get_author_posts_url(get_the_author_meta('ID')) ?>"><?php the_author() ?></a>
-			</span>
-		</div>
-
-		<div class="entry-content">
-			<?php the_content(); ?>
-			<?php wp_link_pages( array( 'before' => '<div class="page-link"><span>' . __( 'Pages:', 'theme' ) . '</span>', 'after' => '</div>' ) ); ?>
-		</div>
-
-		<div class="entry-meta">
-			<?php theme_entry_meta(); ?>
-			<?php edit_post_link( 'Edit' , '<span class="edit-link">', '</span>' ); ?>
 		</div>
 	</div>
 
-	<div id="nav-below" class="navigation nav-single">
-		<span class="nav-previous"><?php previous_post_link( '%link', __( '<span class="meta-nav">&larr;</span> Previous Entry: %title', 'theme' ) ); ?></span>
-		<span class="nav-next"><?php next_post_link( '%link', __( 'Next Entry: %title <span class="meta-nav">&rarr;</span>', 'theme' ) ); ?></span>
+	<!--container starts-->
+	<div class="container clearfix">
+		<?php the_content(); ?>
 	</div>
-	
-	<?php comments_template( '', true ); ?>
+	<!--container ends-->
 
-<?php endwhile; ?>
+	<div class="clear"></div>
+</div>
+<!--top_gradient ends-->
 
-</article>
-
-<?php get_sidebar(); ?>
+<div class="spacer_30px"></div>
 <?php get_footer(); ?>
+
