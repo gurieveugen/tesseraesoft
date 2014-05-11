@@ -1,3 +1,8 @@
+<?php
+/**
+ * Template name: Cancel
+ */
+?>
 <?php 
 get_header();
 the_post();
@@ -19,6 +24,7 @@ the_post();
 	<!--container starts-->
 	<div class="container clearfix">
 		<?php the_content(); ?>
+		<?php unset($_SESSION['pending_items']); ?>
 	</div>
 	<!--container ends-->
 

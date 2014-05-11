@@ -1,0 +1,249 @@
+<?php
+class PageFactory{
+    //                __  _                 
+    //   ____  ____  / /_(_)___  ____  _____
+    //  / __ \/ __ \/ __/ / __ \/ __ \/ ___/
+    // / /_/ / /_/ / /_/ / /_/ / / / (__  ) 
+    // \____/ .___/\__/_/\____/_/ /_/____/  
+    //     /_/                              
+    private $name;
+    private $args;
+    private $option_group;
+    private $option_name;
+    private $setting_sections;
+    private $fields;
+
+    //                    __  __              __    
+    //    ____ ___  ___  / /_/ /_  ____  ____/ /____
+    //   / __ `__ \/ _ \/ __/ __ \/ __ \/ __  / ___/
+    //  / / / / / /  __/ /_/ / / / /_/ / /_/ (__  ) 
+    // /_/ /_/ /_/\___/\__/_/ /_/\____/\__,_/____/
+    public function __construct($name, $args = array())
+    {
+        $this->name        = $name;
+        $defaults = array(
+            'icon_code'   => '',
+            'menu_slug'   => $this->getSlug($name),
+            'parent_page' => 'themes.php',
+            'capability'  => 'administrator',
+            'page_title'  => ucwords($name),
+            'menu_title'  => ucwords($name));
+
+        $this->args         = array_merge($defaults, $args);
+        $this->option_group = sprintf('%s_group', $this->args['menu_slug']);
+        $this->option_name  = $this->args['menu_slug'];
+
+        // =========================================================
+        // HOOK'S
+        // =========================================================
+        add_action('admin_menu', array($this, 'addPage'));        
+        wp_enqueue_style('font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');
+    }
+
+    /**
+     * Add page to menu
+     */
+    public function addPage()
+    {
+        if($this->args['parent_page'] != '')
+        {
+            add_submenu_page($this->args['parent_page'], $this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['menu_slug'], array(&$this, 'createPage'));     
+        }
+        else
+        {
+            add_menu_page($this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['menu_slug'], array(&$this, 'createPage'));
+        }
+
+        if($this->args['icon_code'] != '') add_action('admin_enqueue_scripts', array(&$this, 'addMenuIcon'));
+    }
+
+    /**
+     * Add Font Awesome icon to menu
+     */
+    public function addMenuIcon()
+    {       
+        ?>
+        <style>
+            #adminmenu #toplevel_page_<?php echo $this->args['menu_slug']; ?> .wp-menu-image:before {
+                content: "\<?php echo $this->args['icon_code']; ?>";  
+                font-family: 'FontAwesome' !important;
+                font-size: 18px !important;
+            }
+        </style>
+        <?php
+    }
+
+    /**
+     * Render page
+     */
+    public function createPage()
+    {
+        global $wp_settings_sections;
+        ?>
+        <div class="wrap">
+            <?php screen_icon(); ?>                 
+            <form method="post" action="options.php">
+            <?php                
+                settings_fields($this->option_group);   
+                do_settings_sections($this->args['menu_slug']);
+                submit_button(); 
+            ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Add section AND his fields
+     * @param string $section_name --- Section display name. Example: Theme options, Plugin settings
+     * @param array $fields        --- Fields to add in to section. 
+     * Example: array(
+     *     array('name' => 'some field', 'type' => 'text'), 
+     *     array('name' => 'some field 2', 'type' => 'text'));
+     */
+    public function addFields($section_name, $fields)
+    {
+        $slug = $this->getSlug($section_name);
+        $this->setting_sections[$slug] = array(
+            'fields' => $fields,
+            'name'   => $section_name,
+            'slug'   => $slug);
+
+        add_action('admin_init', array($this, 'pageInit'));
+    }
+
+    /**
+     * Page initialization
+     */
+    public function pageInit()
+    {    
+        $options = $this->getAll();    
+        register_setting($this->option_group, $this->option_name, array($this, 'sanitize'));
+        foreach ($this->setting_sections as &$section) 
+        {
+            add_settings_section($section['slug'], $section['name'], null, $this->args['menu_slug']);
+            if(is_array($section['fields']))
+            {
+                foreach ($section['fields'] as &$field) 
+                {
+                    $field_name = $field['name'];
+                    $field_slug = $this->getSlug($field_name);
+                    $field_type = sprintf('control%s', ucwords($field['type']));
+                    $args       = array(
+                        'section_slug' => $section['slug'], 
+                        'value'        => $options[$section['slug']][$field_slug],
+                        'name'         => $field_name,
+                        'slug'         => $field_slug);
+                    add_settings_field($field_slug, $field_name, array(&$this, $field_type), $this->args['menu_slug'], $section['slug'], $args);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get all options from this page
+     * @return array
+     */
+    public function getAll()
+    {
+        return get_option($this->option_name);
+    }
+
+    /**
+     * Check fields value
+     * @param  array $input --- array to check.
+     * @return array        --- array to save.
+     */
+    public function sanitize($input)
+    {
+
+        $save = array();
+        if(is_array($input))
+        {
+            foreach ($input as $section => &$fields) 
+            {
+                foreach ($fields as $key => &$field) 
+                {
+                    $type = $this->getFieldType($section, $key);                    
+                    if($type)
+                    {
+                        $callback = sprintf('check%s', ucwords($type));
+                        if(method_exists($this, $callback))
+                        {
+                            $save[$section][$key] = $this->$callback($field);
+                        }   
+                    }
+                }
+            }
+        }
+       
+        return $save;
+    }
+
+    /**
+     * Forming slug name
+     * @param  string $name --- Display name. Example: PayPal options
+     * @return string       --- Slug name. Example: paypal_options
+     */
+    private function getSlug($name)
+    {
+        return strtolower(str_replace(' ', '_', $name));
+    }
+
+    /**
+     * Get fields types from section
+     * @param  string $section_slug --- section slug
+     * @return array                --- array types. array( field => type )
+     */
+    private function getFieldTypes($section_slug)
+    {
+        $types = array();
+
+        if(isset($this->setting_sections[$section_slug]) && isset($this->setting_sections[$section_slug]['fields']))
+        {
+
+            foreach ($this->setting_sections[$section_slug]['fields'] as &$field) 
+            {
+                $slug          = $this->getSlug($field['name']);
+                $types[$slug] = $field['type'];
+            }
+        }
+        return $types;
+    }
+
+    /**
+     * Get field type by section_slug and field_slug
+     * @param  string $section_slug --- section slug name
+     * @param  string $field_slug   --- field slug name
+     * @return mixed                --- if success return type else return false.
+     */
+    private function getFieldType($section_slug, $field_slug)
+    {
+        $types = $this->getFieldTypes($section_slug);
+
+        if(isset($types[$field_slug])) return $types[$field_slug];
+        return false;
+    }
+
+    // =========================================================
+    // CONTROL TYPES
+    // =========================================================
+    
+    /**
+     * TEXT TYPE
+     * @param  array $args --- control properties
+     */
+    public function controlText($args)
+    {
+        printf('<input type="text" id="%s" class="regular-text" name="%s[%s][%s]" value="%s" />', $args['slug'], $this->option_name, $args['section_slug'], $args['slug'], $args['value']);
+    }
+
+    // =========================================================
+    // CHECK TYPES
+    // =========================================================
+    
+    private function checkText($value)
+    {
+        return trim(strip_tags($value));
+    }
+}

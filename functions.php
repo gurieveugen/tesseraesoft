@@ -8,9 +8,11 @@
 // =========================================================
 require_once 'includes/walker_tesserasoft.php';
 require_once 'includes/post_type_factory.php';
+require_once 'includes/page_factory.php';
 require_once 'includes/widget_testimonials.php';
 require_once 'includes/widget_twitter_feed.php';
 require_once 'includes/lorem_posts.php';
+require_once 'includes/paypal.php';
 // =========================================================
 // CONSTANTS
 // =========================================================
@@ -31,6 +33,7 @@ add_action('widgets_init', 'registerWidgets');
 add_shortcode('faq', 'shortcodeFAQ');
 add_shortcode('knowledgebase', 'shortcodeKnowledgeBase');
 add_shortcode('items', 'shortcodeDisplayItems');
+add_shortcode('products', 'shortcodeDisplayProducts');
 // =========================================================
 // THEME SUPPORT
 // =========================================================
@@ -78,7 +81,9 @@ register_nav_menus(array(
 // POST TYPES
 // =========================================================
 
-$testimonial_args                         = array('supports' => array("title", "editor"));
+$testimonial_args                         = array(
+	'supports'  => array("title", "editor"),
+	'icon_code' => 'f164');
 $GLOBALS['testimonial']                   = new PostTypeFactory('testimonial', $testimonial_args);
 $GLOBALS['testimonial']->meta_box_context = 'side';
 $GLOBALS['testimonial']->addMetaBox('Testimonial', array(
@@ -89,9 +94,24 @@ $GLOBALS['testimonial']->addMetaBox('Testimonial', array(
 $GLOBALS['page_meta'] = new PostTypeFactory('page');
 $GLOBALS['page_meta']->addMetaBox('Additional info', array('Sub title' => 'text'));
 
+$GLOBALS['faq']           = new PostTypeFactory('faq', array('supports' => array("title", "editor"), 'icon_code' => 'f128'));
+$GLOBALS['knowledgebase'] = new PostTypeFactory('knowledge base', array('supports' => array("title", "editor"), 'icon_code' => 'f02d'));
+$GLOBALS['product']      = new PostTypeFactory('product', array('supports' => array("title", "editor"), 'icon_code' => 'f07a'));
+$GLOBALS['product']->meta_box_context = 'side';
+$GLOBALS['product']->addMetaBox('Additional info', array('price' => 'text'));
 
-$GLOBALS['faq']            = new PostTypeFactory('faq', array('supports' => array("title", "editor")));
-$GLOBALS['knowledgebase']  = new PostTypeFactory('knowledge base', array('supports' => array("title", "editor")));
+// =========================================================
+// PAGES
+// =========================================================
+$GLOBALS['paypal'] = new PageFactory('PayPal', array('parent_page' => '', 'icon_code' => 'f085'));
+$GLOBALS['paypal']->addFields('PayPal options', array(
+	array( 'name' => 'Mode', 'type' => 'text'),
+	array( 'name' => 'Api User name', 'type' => 'text'),
+	array( 'name' => 'Api Password', 'type' => 'text'),
+	array( 'name' => 'Api Signature', 'type' => 'text'),
+	array( 'name' => 'Currency Code', 'type' => 'text'),
+	array( 'name' => 'Return URL', 'type' => 'text'),
+	array( 'name' => 'Cancel URL', 'type' => 'text')));
 
 // =========================================================
 // GENERATE LOREM POSTS
@@ -269,6 +289,7 @@ function scriptsMethod()
 	wp_enqueue_style('jcarousel', TDU.'/css/jcarousel.css');
 	wp_enqueue_style('prettyPhoto', TDU.'/css/prettyPhoto.css');
 	wp_enqueue_style('nivoslider', TDU.'/css/nivo-slider.css');
+	wp_enqueue_style('modal', TDU.'/css/jquery.modal.css');
 	// =========================================================
 	// SCRIPTS
 	// =========================================================
@@ -290,11 +311,13 @@ function scriptsMethod()
 	wp_enqueue_script('nivoslider', TDU.'/js/jquery.nivoslider.js');
 	wp_enqueue_script('quicksand', TDU.'/js/jquery.quicksand.js');
 	wp_enqueue_script('addthis', '//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5316dc2271b78736');
+	wp_enqueue_script('modal', TDU.'/js/jquery.modal.js');
 
 
 	wp_localize_script('main', 'defaults', array( 
-			'ajaxurl' => TDU.'/includes/ajax.php',
-			'tdu'     => TDU));
+			'ajaxurl'      => TDU.'/includes/ajax.php',
+			'tdu'          => TDU,
+			'is_logged_in' => is_user_logged_in()));
 }
 
 /**
@@ -370,6 +393,54 @@ function wrapAccordionItem($url, $title, $text)
 {
 	return sprintf('<div> <h3><a href="%s">%s</a></h3> <div>%s</div> </div>', $url, $title, $text);
 }
+
+/**
+ * Short code.
+ * Display custom post type.
+ * Generate Products HTML code
+ * @param  array $args --- options array
+ * @return mixed
+ */
+function shortcodeDisplayProducts($args)
+{
+	$thead  = '';
+	$tbody  = '';
+	$bottom = '';
+	$count  = isset($args['count']) ? intval($args['count']) : -1;
+	$items  = $GLOBALS['product']->getItems($args);
+
+	if(!$items) return;	
+	foreach ($items as &$item) 
+	{
+		$thead .= sprintf('<td><h1>%s</h1><span class="pricing"><strong>$%s</strong><br>/MO</span></td>', $item->post_title, $item->meta['product_price']);
+		$tbody .= sprintf('<td class="text-padding">%s</td>', $item->post_content);
+		$bottom.= sprintf('<td><a class="button button-black buy" data-id="%s" href="#">Choose plan</a> </td>', $item->ID);
+	}
+
+	ob_start();
+	?>
+	<div id="pricing">
+	    <table cellspacing="0" cellpadding="0" border="0">
+	        <thead>
+	            <tr>
+					<?php echo $thead; ?>
+	            </tr>
+	        </thead>
+	        <tbody>
+	            <tr>
+	                <?php echo $tbody; ?>
+	            </tr>
+	            <tr class="bottom">
+	               <?php echo $bottom; ?>
+	            </tr>
+	        </tbody>
+	    </table>
+	</div>
+	<?php
+	$var = ob_get_contents();
+    ob_end_clean();
+    return $var;
+}	
 
 /**
  * Start session if session not started

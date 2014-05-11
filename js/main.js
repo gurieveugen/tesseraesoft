@@ -75,5 +75,72 @@ $(document).ready(function() {
     }); 
     //To clear form field on page refresh
     $('#subform #email').val('');
+    // =========================================================
+    // BUY
+    // =========================================================
+    $('.buy').click(function(e){
+        if(!defaults.is_logged_in) alert('Only registered users can buy!');
+        else
+        {
+            jQuery.ajax({
+                type: "POST",
+                url: defaults.ajaxurl + '?action=buy',
+                dataType: 'json',
+                data: { id : $(this).data('id') },              
+                success: function(data){  
+                    if(data.result) $('#buy-success').modal();        
+                    else $('#buy-error').modal();
+                }
+            });            
+        }
+        e.preventDefault();
+    });
+    // =========================================================
+    // REMOVE ITEM
+    // =========================================================
+    $('.remove-item').click(function(e){
+        var price = $(this).data('price');
+        var sum   = $(this).data('sum');
+        var tr    = $(this).parent().parent();
+        
+        price = parseInt(price);
+        sum   = parseInt(sum);
 
+        jQuery.ajax({
+            type: "POST",
+            url: defaults.ajaxurl + '?action=remove',
+            dataType: 'json',
+            data: { id : $(this).data('id') },              
+            success: function(data){  
+                if(data.result) 
+                {
+                    $('#sum').text(sum-price);
+                    tr.remove();
+                }
+            }
+        });      
+    });
+
+    // =========================================================
+    // SUBMIT CART
+    // =========================================================
+    $('#cart-form').submit(function(e){
+        jQuery.ajax({
+            type: "POST",
+            url: defaults.ajaxurl + '?action=checkout',
+            dataType: 'json',
+            data: $('#cart-form').serialize(),              
+            success: function(data){ 
+                if(data.result)
+                {
+                    window.location = data.url;
+                } 
+                else
+                {
+                    console.log(data);    
+                }
+            }
+        });      
+        e.preventDefault();
+    });
 });

@@ -44,7 +44,8 @@ class PostTypeFactory{
         }
 
         add_action('save_post', array(&$this, 'savePost'));
-        add_action('post_edit_form_tag', function() { echo ' enctype="multipart/form-data"'; });        
+        add_action('post_edit_form_tag', function() { echo ' enctype="multipart/form-data"'; });     
+        wp_enqueue_style('font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');   
     }
 
     /**
@@ -88,6 +89,25 @@ class PostTypeFactory{
         
         $args = array_merge($args, $this->post_type_args);
         register_post_type($this->post_type_name, $args);
+
+        if(isset($this->post_type_args['icon_code'])) add_action('admin_enqueue_scripts', array(&$this, 'addMenuIcon'));
+    }
+
+    /**
+     * Add menu icon
+     */
+    public function addMenuIcon()
+    {
+        $n = str_replace(' ', '', $this->post_type_name);
+        ?>
+        <style>
+            #adminmenu #menu-posts-<?php echo $n; ?> .wp-menu-image:before {
+                content: "\<?php echo $this->post_type_args['icon_code']; ?>";  
+                font-family: 'FontAwesome' !important;
+                font-size: 18px !important;
+            }
+        </style>
+        <?php
     }
 
 

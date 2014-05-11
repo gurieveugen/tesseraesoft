@@ -45,6 +45,33 @@
 </div>
 <!--copyright ends--> 
 
+<div id="buy-success" class="modal fade" style="display: none;">
+    <div class="header">
+        <a data-dismiss="modal" class="close">×</a>
+    </div>
+    <div class="body text-center">
+        <h1>Thank you for shopping!</h1>
+        <h2>Can go to the cart or continue shopping.</h2>
+    </div>
+    <div class="footer">
+        <a href="<?php echo get_bloginfo('url'); ?>/cart" class="button button-black"><i class="fa fa-shopping-cart"></i> Cart</a>
+        <a href="#" class="button button-black" data-dismiss="modal"><i class="fa fa-money"></i> Continue shopping</a>
+    </div>
+</div>
+
+<div id="buy-error" class="modal fade" style="display: none;">
+    <div class="header">
+        <a data-dismiss="modal" class="close">×</a>
+    </div>
+    <div class="body text-center">
+        <h1>Error!</h1>
+        <h2>Something went wrong! Try to contact the administrator!</h2>
+    </div>
+    <div class="footer">       
+        <a href="#" class="button button-black" data-dismiss="modal"><i class="fa fa-money"></i> Continue shopping</a>
+    </div>
+</div>
+
 <!-- BEGIN JIVOSITE CODE {literal} -->
 <script type='text/javascript'>
 (function(){ var widget_id = '152782';
