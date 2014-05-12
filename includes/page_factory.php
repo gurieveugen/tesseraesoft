@@ -12,6 +12,7 @@ class PageFactory{
     private $option_name;
     private $setting_sections;
     private $fields;
+    private $tables;
 
     //                    __  __              __    
     //    ____ ___  ___  / /_/ /_  ____  ____/ /____
@@ -78,16 +79,18 @@ class PageFactory{
      */
     public function createPage()
     {
-        global $wp_settings_sections;
         ?>
+        <h2><?php echo $this->args['page_title']; ?></h2>
         <div class="wrap">
             <?php screen_icon(); ?>                 
             <form method="post" action="options.php">
             <?php                
                 settings_fields($this->option_group);   
                 do_settings_sections($this->args['menu_slug']);
-                submit_button(); 
+                if($this->tables) echo implode(' ', $this->tables);
+                if(is_array($this->setting_sections)) submit_button(); 
             ?>
+
             </form>
         </div>
         <?php
@@ -110,6 +113,76 @@ class PageFactory{
             'slug'   => $slug);
 
         add_action('admin_init', array($this, 'pageInit'));
+    }
+
+    /**
+     * Generate and add table to page
+     * @param  array $table --- two-dimensional array
+     * @param  array $args  --- options
+     */
+    public function addTable($table, $args = array())
+    {
+        $this->tables[] = $this->generateTable($table, $args);
+    }
+
+    /**
+     * Generate table HTML from array
+     * @param  array $table --- two-dimensional array
+     * @param  array $args  --- options
+     * @return string       --- html code or false
+     */
+    public function generateTable($table, $args = array())
+    {
+        if(!is_array($table) OR !is_array(current($table))) return false;        
+        
+        $header_str = '';
+        $footer_str = '';
+        $defaults   = array(
+            'class'  => 'widefat fixed',
+            'header' => true,
+            'footer' => true);
+        $args    = array_merge($defaults, $args);
+        $classes = $args['class'] != '' ? sprintf('class="%s"', $args['class']) : '';
+
+        $keys       = array_keys($table);
+        $keys_count = count($keys);
+        $first_key  = $keys[0];
+        $last_key   = $keys[$keys_count-1];
+        
+        if($args['header']) 
+        {
+            $header = $table[$first_key];
+            
+            foreach ($header as &$col) 
+            {
+                $header_str.= sprintf('<th>%s</th>', $col);
+            }
+            $header_str = sprintf('<thead><tr>%s</tr></thead>', $header_str);
+            unset($table[$first_key]);
+        }
+        if($args['footer'])
+        {
+            $footer     = $table[$last_key];
+
+            foreach ($footer as &$col) 
+            {
+                $footer_str.= sprintf('<th>%s</th>', $col);
+            }
+            $footer_str = sprintf('<tr class="footer">%s</tr>', $footer_str);
+            unset($table[$last_key]);
+        }
+
+        foreach ($table as &$row) 
+        {
+            $out.= '<tr>';
+            foreach ($row as &$col) 
+            {
+                $out.= sprintf('<td>%s</td>', $col);
+            }
+            $out.= '</tr>';
+        }
+
+        return sprintf('<table %s>%s<tbody>%s%s</tbody></table>', $classes, $header_str, $out, $footer_str);
     }
 
     /**

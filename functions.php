@@ -113,6 +113,13 @@ $GLOBALS['paypal']->addFields('PayPal options', array(
 	array( 'name' => 'Return URL', 'type' => 'text'),
 	array( 'name' => 'Cancel URL', 'type' => 'text')));
 
+$GLOBALS['paid'] = new PageFactory('Paid Orders', array(
+	'parent_page' => '', 
+	'icon_code'   => 'f0d6',
+	'capability'  => 'subscriber'));
+
+$GLOBALS['paid']->addTable(getPaidOrders());
+
 // =========================================================
 // GENERATE LOREM POSTS
 // =========================================================
@@ -452,4 +459,33 @@ function _session_start()
 		return session_start();
 	}
 	return false;
+}
+
+/**
+ * Return all paid orders
+ * @return array --- paid orders
+ */
+function getPaidOrders()
+{
+	$user   = wp_get_current_user();
+	$meta   = get_user_meta($user->ID, 'products', true);	
+	$paid[] = array('Title', 'Description', 'Date/Time', 'Count', 'Price', 'Sum');
+	$total  = 0;
+	foreach ($meta as $id => $item) 
+	{
+		$p     = get_post($id);
+		$price = get_post_meta($id, 'product_price', true);					
+		$dt    = date('d-m-Y H:i', $item['time']);
+		$sum   = $item['count']*$price;
+		if($item['status'] == 'paid') 
+		{
+			$paid[] = array($p->post_title, strip_tags($p->post_content), $dt, $item['count'], $price, $sum);
+			$total  = $total + $sum; 		
+		}
+	}
+	if($total > 0)
+	{
+		$paid[] = array('<h2>Total sum:</h2>', '', '', '', '', sprintf('<h2>%s</h2>', $total));
+	}
+	return $paid;
 }
