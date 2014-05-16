@@ -29,6 +29,7 @@ add_filter('widget_text', 'templateUrl');
 remove_filter('the_content', 'wpautop');
 remove_filter('the_excerpt', 'wpautop');
 add_action('wp_enqueue_scripts', 'scriptsMethod');
+add_action('admin_enqueue_scripts', 'adminScriptsMethod');
 add_action('widgets_init', 'registerWidgets');
 add_shortcode('faq', 'shortcodeFAQ');
 add_shortcode('knowledgebase', 'shortcodeKnowledgeBase');
@@ -118,7 +119,43 @@ $GLOBALS['paid'] = new PageFactory('Paid Orders', array(
 	'icon_code'   => 'f0d6',
 	'capability'  => 'subscriber'));
 
-$GLOBALS['paid']->addTable(getPaidOrders());
+
+$GLOBALS['paid']->addTable(getPaidOrders(), array('class' => 'widefat'));
+
+
+$GLOBALS['paid_all'] = new PageFactory('All Paid Orders', array(
+	'parent_page' => '', 
+	'icon_code'   => 'f0d6',
+	'capability'  => 'administrator'));
+
+$args = array(
+	'blog_id'      => $GLOBALS['blog_id'],
+	'role'         => '',
+	'meta_key'     => '',
+	'meta_value'   => '',
+	'meta_compare' => '',
+	'meta_query'   => array(),
+	'include'      => array(),
+	'exclude'      => array(),
+	'orderby'      => 'id',
+	'order'        => 'ASC',
+	'offset'       => '',
+	'search'       => '',
+	'number'       => '',
+	'count_total'  => false,
+	'fields'       => 'all',
+	'who'          => '');
+$users = get_users($args);
+
+if($users)
+{
+	$GLOBALS['paid_all']->addHTML('<label for="user-select">Select user:</label>');
+	$GLOBALS['paid_all']->addHTML(getUsersSelect($users));
+	foreach ($users as &$user) 
+	{		
+		$GLOBALS['paid_all']->addTable(getPaidOrders($user->id), array('class' => 'widefat hide user-table', 'id' => 'user-'.$user->id));
+	}
+}
 
 // =========================================================
 // GENERATE LOREM POSTS
@@ -296,7 +333,7 @@ function scriptsMethod()
 	wp_enqueue_style('jcarousel', TDU.'/css/jcarousel.css');
 	wp_enqueue_style('prettyPhoto', TDU.'/css/prettyPhoto.css');
 	wp_enqueue_style('nivoslider', TDU.'/css/nivo-slider.css');
-	wp_enqueue_style('modal', TDU.'/css/jquery.modal.css');
+	wp_enqueue_style('modal', TDU.'/css/jquery.modal.css');	
 	// =========================================================
 	// SCRIPTS
 	// =========================================================
@@ -325,6 +362,21 @@ function scriptsMethod()
 			'ajaxurl'      => TDU.'/includes/ajax.php',
 			'tdu'          => TDU,
 			'is_logged_in' => is_user_logged_in()));
+}
+
+/**
+ * Add scripts and styles to HTML header in admin panel
+ */
+function adminScriptsMethod()
+{
+	// =========================================================
+	// STYLES
+	// =========================================================
+	wp_enqueue_style('admin-styles', TDU.'/css/admin_styles.css');
+	// =========================================================
+	// SCRIPTS
+	// =========================================================
+	wp_enqueue_script('admin-scripts', TDU.'/js/admin_scripts.js', array('jquery'));
 }
 
 /**
@@ -408,7 +460,7 @@ function wrapAccordionItem($url, $title, $text)
  * @param  array $args --- options array
  * @return mixed
  */
-function shortcodeDisplayProducts($args)
+function shortcodeDisplayProducts($args, $content = '')
 {
 	$thead  = '';
 	$tbody  = '';
@@ -423,7 +475,8 @@ function shortcodeDisplayProducts($args)
 		$tbody .= sprintf('<td class="text-padding">%s</td>', $item->post_content);
 		$bottom.= sprintf('<td><a class="button button-black buy" data-id="%s" href="#">Choose plan</a> </td>', $item->ID);
 	}
-
+	if(!$args['show_description']) $tbody = '';
+	
 	ob_start();
 	?>
 	<div id="pricing">
@@ -434,6 +487,7 @@ function shortcodeDisplayProducts($args)
 	            </tr>
 	        </thead>
 	        <tbody>
+	        	<?php echo $content; ?>
 	            <tr>
 	                <?php echo $tbody; ?>
 	            </tr>
@@ -463,14 +517,21 @@ function _session_start()
 
 /**
  * Return all paid orders
- * @return array --- paid orders
+ * @param  $user_id --- User id
+ * @return array    --- paid orders
  */
-function getPaidOrders()
-{
-	$user   = wp_get_current_user();
-	$meta   = get_user_meta($user->ID, 'products', true);	
+function getPaidOrders($user_id = '')
+{	
+	if($user_id == '') 
+	{
+		$user    = wp_get_current_user();
+		$user_id = intval($user->id);
+	}
+
+	$meta   = get_user_meta($user_id, 'products', true);	
 	$paid[] = array('Title', 'Description', 'Date/Time', 'Count', 'Price', 'Sum');
 	$total  = 0;
+	if(!$meta) return false;
 	foreach ($meta as $id => $item) 
 	{
 		$p     = get_post($id);
@@ -488,4 +549,20 @@ function getPaidOrders()
 		$paid[] = array('<h2>Total sum:</h2>', '', '', '', '', sprintf('<h2>%s</h2>', $total));
 	}
 	return $paid;
+}
+
+/**
+ * Get users select for admin panel
+ * @param  array $users --- user objects
+ * @param  string $name --- select name
+ * @return string       --- HTML Code
+ */
+function getUsersSelect($users, $name='user-select')
+{
+	$out = '<option value="-1">Please select user</option>';
+	foreach ($users as &$user) 
+	{		
+		$out.= sprintf('<option value="%s">%s</option>', $user->id, $user->display_name);
+	}
+	return sprintf('<select name="%s" id="%s">%s</select>', $name, $name, $out);
 }

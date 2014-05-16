@@ -11,8 +11,8 @@ class PageFactory{
     private $option_group;
     private $option_name;
     private $setting_sections;
-    private $fields;
-    private $tables;
+    private $fields; 
+    private $html;
 
     //                    __  __              __    
     //    ____ ___  ___  / /_/ /_  ____  ____/ /____
@@ -87,7 +87,7 @@ class PageFactory{
             <?php                
                 settings_fields($this->option_group);   
                 do_settings_sections($this->args['menu_slug']);
-                if($this->tables) echo implode(' ', $this->tables);
+                if($this->html) echo implode(' ', $this->html);
                 if(is_array($this->setting_sections)) submit_button(); 
             ?>
 
@@ -122,7 +122,19 @@ class PageFactory{
      */
     public function addTable($table, $args = array())
     {
-        $this->tables[] = $this->generateTable($table, $args);
+        if($table)
+        {
+            $this->html[] = $this->generateTable($table, $args);    
+        }
+    }
+
+    /**
+     * Add HTML to page
+     * @param string $html --- HTML Code
+     */
+    public function addHTML($html)
+    {
+        $this->html[] = $html;
     }
 
     /**
@@ -139,10 +151,14 @@ class PageFactory{
         $footer_str = '';
         $defaults   = array(
             'class'  => 'widefat fixed',
+            'id'     => '',
+            'title'  => '',
             'header' => true,
             'footer' => true);
         $args    = array_merge($defaults, $args);
         $classes = $args['class'] != '' ? sprintf('class="%s"', $args['class']) : '';
+        $id      = $args['id'] != '' ? sprintf(' id="%s"', $args['id']) : '';
+        $title   = $args['title'] == '' ? '' : sprintf('<h3>%s</h3>', $args['title']);          
 
         $keys       = array_keys($table);
         $keys_count = count($keys);
@@ -163,10 +179,12 @@ class PageFactory{
         if($args['footer'])
         {
             $footer     = $table[$last_key];
-
-            foreach ($footer as &$col) 
+            if($footer)
             {
-                $footer_str.= sprintf('<th>%s</th>', $col);
+                foreach ($footer as &$col) 
+                {
+                    $footer_str.= sprintf('<th>%s</th>', $col);
+                }    
             }
             $footer_str = sprintf('<tr class="footer">%s</tr>', $footer_str);
             unset($table[$last_key]);
@@ -182,7 +200,7 @@ class PageFactory{
             $out.= '</tr>';
         }
 
-        return sprintf('<table %s>%s<tbody>%s%s</tbody></table>', $classes, $header_str, $out, $footer_str);
+        return sprintf('%s<table %s%s>%s<tbody>%s%s</tbody></table>', $title, $classes, $id, $header_str, $out, $footer_str);
     }
 
     /**
