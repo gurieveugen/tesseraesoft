@@ -15,7 +15,7 @@
     <div class="grid_12"> 
       
       <!--flexslider starts-->
-      <div class="flexslider image-slider">
+      <div class="image-slider">
         <ul class="slides">
           
           <!--first slide starts-->
@@ -31,75 +31,6 @@
           </li>
           <!--first slide starts--> 
           
-          <!--second slide starts-->
-          <li>
-            <div class="slide-1">
-              <div class="circle1">
-                <p class="big_letter">O</p>
-                <h1>Optimized graphics</h1>
-                <span>for fast page loading</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-              <div class="circle2">
-                <p class="big_letter">N</p>
-                <h1>Neat and clean</h1>
-                <span>code for lorem ipsum</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-              <div class="circle3">
-                <p class="big_letter">E</p>
-                <h1>Easy to customize</h1>
-                <span>help is readily available</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-            </div>
-          </li>
-          <!--second slide ends--> 
-          
-          <!--third slide starts-->
-          <li>
-            <div class="slide-3">
-              <h3>Autem vel eum iriure lor in hendrerit inte velit.</h3>
-              <p>Luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis.</p>
-              <a href="#" class="top_padding">Learn more &raquo;</a></div>
-            <div class="image_slide_frame2"><img src="<?php echo TDU; ?>/images/preview/any-slide-img.jpg" width="432" height="302" alt="image"></div>
-            <div class="slide-3">
-              <h3>Autem vel eum iriure lor in hendrerit inte velit.</h3>
-              <ul class="list3 clearfix">
-                <li>Legentis in iis qui facit eorum.</li>
-                <li>Luptatum zzril delenit augue.</li>
-                <li>Claritas est etiam processus </li>
-                <li>Duis autem vel eum iriure </li>
-              </ul>
-            </div>
-          </li>
-          <!--third slide ends--> 
-          
-          <!--forth slide starts-->
-          <li>
-            <div class="slide-1">
-              <div class="circle1">
-                <p class="big_letter">1</p>
-                <h1>Sign up</h1>
-                <span>signup with softone</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-              <div class="circle2">
-                <p class="big_letter">2</p>
-                <h1>Download</h1>
-                <span>download lorem ipsum</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-              <div class="circle3">
-                <p class="big_letter">3</p>
-                <h1>Install</h1>
-                <span>install and ready to go</span>
-                <p>Legentis in iis qui facit eorum.Investigationes nstraverunt lectores legere me lius quod ii legunt saepius.</p>
-              </div>
-            </div>
-          </li>
-          <!--forth slide ends-->
-          
         </ul>
       </div>
       <!--flexslider ends-->
@@ -109,26 +40,6 @@
   </div>
 </div>
 <!--header_bottom ends--> 
-
-<!--section for intro text and button starts-->
-<div class="section colored">
-  <div class="container clearfix">
-    <div class="grid_12"> 
-      
-      <!--action2 starts-->
-      <div class="action2">
-        <h1>Introducing softone HTML lorem ipsum dolor amet facilis template </h1>
-        <p>am liber tempor cum soluta nobis eleifend option doming quod mazim.</p>
-      </div>
-      <!--action2 ends--> 
-      
-      <!--button here--> 
-      <a href="#" class="button button-orange right"> <span><img src="<?php echo TDU; ?>/images/icons/button/button-icon1-orange.png" width="17" height="16" alt="icon">Buy theme now</span> </a>
-      <div class="clear"></div>
-    </div>
-  </div>
-</div>
-<!--section for intro text and button ends--> 
 
 <!--section for features starts-->
 <div class="section">
@@ -192,9 +103,9 @@
             <h3>Subscribe for product updates and promotions!</h3>
             <p>Nam liber tempor duis soluta imperdiet doming mazim placerat facer assum.</p>
           </div>
-          
+          <?php echo do_shortcode('[contact-form-7 id="625" title="Subscribe"]'); ?>
           <!--subscribe form here-->
-          <form id="subform" method="post" action="subscribe-form.php">
+          <!-- <form id="subform" method="post" action="subscribe-form.php">
             <fieldset>
               <p>
                 <input name="email" id="email" placeholder="Enter Email id here" class="required email" />
@@ -202,7 +113,7 @@
               <input type="submit" class="sub_submit" name="submit" value="subscribe" />
               <div id="result_sub"></div>
             </fieldset>
-          </form>
+          </form> -->
           <!--subscribe form ends-->
           
           <div class="clear"></div>
