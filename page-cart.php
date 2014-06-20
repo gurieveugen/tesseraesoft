@@ -40,8 +40,7 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 					<table cellspacing="0" cellpadding="0">
 						<thead>
 							<tr>
-								<th>Title</th>
-								<th>Description</th>
+								<th>Title</th>								
 								<th>Date/Time</th>
 								<th>Count</th>
 								<th>Price</th>
@@ -64,11 +63,7 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 										<td>
 											<?php echo $p->post_title; ?>
 											<input type="hidden" name="items[<?php echo $id; ?>][title]" value="<?php echo $p->post_title; ?>">
-										</td>
-										<td>
-											<?php echo $p->post_content; ?>
-											<input type="hidden" name="items[<?php echo $id; ?>][content]" value="<?php echo $p->post_content; ?>">
-										</td>
+										</td>										
 										<td><?php echo $dt; ?></td>
 										<td>
 											<?php echo $item['count']; ?>
@@ -88,9 +83,14 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 								}
 							}
 							?>	
-							<tr>
-								<td></td>
-								<td><button type="submit" class="button button-black checkout-btn"><i class="fa fa-credit-card "></i> Checkout</button></td>
+							<tr>								
+								<td>
+									<button type="submit" class="button button-black checkout-btn"><i class="fa fa-credit-card "></i> Checkout</button>
+									<div class="iaccept">
+										<input type="checkbox" name="" value="" id="accept_terms">
+										<label for="">Clicking the button "Place order" you accept: <a href="/terms">Terms and Privacy</a></label>
+									</div>
+								</td>
 								<td></td>
 								<td></td>
 								<td><h3 id="sum"><?php echo $sum; ?></h3></td>
@@ -105,8 +105,7 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 				<table cellspacing="0" cellpadding="0">
 					<thead>
 						<tr>
-							<th>Title</th>
-							<th>Description</th>
+							<th>Title</th>							
 							<th>Date/Time</th>
 							<th>Count</th>
 							<th>Price</th>											
@@ -127,11 +126,7 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 								<td>
 									<?php echo $p->post_title; ?>
 									
-								</td>
-								<td>
-									<?php echo $p->post_content; ?>
-									
-								</td>
+								</td>								
 								<td><?php echo $dt; ?></td>
 								<td>
 									<?php echo $item['count']; ?>
@@ -146,8 +141,7 @@ $subtitle = isset($meta['page_sub_title']) ? $meta['page_sub_title'] : '';
 						}
 						?>	
 						<tr>
-							<td></td>
-							<td></td>
+							<td></td>							
 							<td></td>
 							<td></td>
 							<td><h3 id="sum"><?php echo $sum; ?></h3></td>							

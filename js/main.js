@@ -125,6 +125,12 @@ $(document).ready(function() {
     // SUBMIT CART
     // =========================================================
     $('#cart-form').submit(function(e){
+        if($('#accept_terms').prop('checked') == false)
+        {
+            alert('Please agree the terms first!');
+            e.preventDefault();
+            return;
+        }
         jQuery.ajax({
             type: "POST",
             url: defaults.ajaxurl + '?action=checkout',
@@ -140,7 +146,8 @@ $(document).ready(function() {
                     console.log(data);    
                 }
             }
-        });      
+        });              
+        console.log('Send');
         e.preventDefault();
-    });
+    });    
 });

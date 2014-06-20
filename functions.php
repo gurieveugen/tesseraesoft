@@ -35,6 +35,7 @@ add_shortcode('faq', 'shortcodeFAQ');
 add_shortcode('knowledgebase', 'shortcodeKnowledgeBase');
 add_shortcode('items', 'shortcodeDisplayItems');
 add_shortcode('products', 'shortcodeDisplayProducts');
+add_shortcode('screencasts', 'shortcodeDisplayScreencasts');
 // =========================================================
 // THEME SUPPORT
 // =========================================================
@@ -45,6 +46,7 @@ add_theme_support('html5', array( 'search-form', 'comment-form', 'comment-list')
 // IMAGES SETTINGS
 // =========================================================
 add_image_size( 'single-post-thumbnail', 400, 9999, false );
+add_image_size( 'screencast-small-img', 200, 125, true);
 set_post_thumbnail_size( 604, 270, true );
 // =========================================================
 // REGISTER SIDEBARS AND MENUS
@@ -61,6 +63,22 @@ register_sidebar(array(
 	'id'            => 'left-sidebar',
 	'name'          => 'Left Sidebar',
 	'before_widget' => '<div class="widget %2$s" id="%1$s">',
+	'after_widget'  => '</div>',
+	'before_title'  => '<h4>',
+	'after_title'   => '</h4>'));
+
+register_sidebar(array(
+	'id'            => 'front-page-first-row',
+	'name'          => 'Front page first row',
+	'before_widget' => '<div class="grid_4 %2$s" id="%1$s">',
+	'after_widget'  => '</div>',
+	'before_title'  => '<h4>',
+	'after_title'   => '</h4>'));
+
+register_sidebar(array(
+	'id'            => 'front-page-second-row',
+	'name'          => 'Front page second row',
+	'before_widget' => '<div class="grid_4 %2$s" id="%1$s">',
 	'after_widget'  => '</div>',
 	'before_title'  => '<h4>',
 	'after_title'   => '</h4>'));
@@ -101,6 +119,9 @@ $GLOBALS['product']      = new PostTypeFactory('product', array('supports' => ar
 $GLOBALS['product']->meta_box_context = 'side';
 $GLOBALS['product']->addMetaBox('Additional info', array('price' => 'text'));
 
+
+$GLOBALS['screencast'] = new PostTypeFactory('Screencast', array('icon_code' => 'f03e'));
+
 // =========================================================
 // PAGES
 // =========================================================
@@ -113,6 +134,13 @@ $GLOBALS['paypal']->addFields('PayPal options', array(
 	array( 'name' => 'Currency Code', 'type' => 'text'),
 	array( 'name' => 'Return URL', 'type' => 'text'),
 	array( 'name' => 'Cancel URL', 'type' => 'text')));
+
+$GLOBALS['front_page'] = new PageFactory('Front page options', array('parent_page' => 'themes.php', 'icon_code' => ''));
+$GLOBALS['front_page']->addFields('Front page Options', array(
+	array('name' => 'Video HTML', 'type' => 'textarea'),
+	array('name' => 'Video description HTML', 'type' => 'textarea'),
+	array('name' => 'Basic requirements HTML', 'type' => 'textarea')
+	));
 
 $GLOBALS['paid'] = new PageFactory('Paid Orders', array(
 	'parent_page' => '', 
@@ -163,7 +191,7 @@ if($users)
 $lp = new LoremPosts();
 // $lp->deletaAllPosts('faq');
 // $lp->deletaAllPosts('knowledgebase');
-// $lp->generatePosts(10, 'faq');
+// $lp->generatePosts(10, 'screencast');
 // $lp->generatePosts(10, 'knowledgebase');
 // 
 
@@ -391,6 +419,52 @@ function themeDefaultContent( $content )
 }
 
 /**
+ * SHORT CODE. [screencasts]
+ * Display screencasts items.
+ * @param  array $args --- shortcode parameters
+ * @return mixed
+ */
+function shortcodeDisplayScreencasts($args)
+{
+	if(!is_array($args)) $args = array();
+	$defaults = array(
+		'posts_per_page' => 5,
+		'post_type'      => 'screencast');
+	$args = array_merge($defaults, $args);
+
+	$posts = get_posts($args);
+	if($posts)
+	{
+		ob_start();
+		?>
+		<ul id="mycarousel" class="jcarousel-skin-tango">
+			<?php
+			foreach ($posts as &$p) 
+			{
+				$img_sm = has_post_thumbnail($p->ID) ? getImgSrc($p->ID, 'screencast-small-img') : 'http://placehold.it/200x125';
+				$img_lg = has_post_thumbnail($p->ID) ? getImgSrc($p->ID, 'full') : 'http://placehold.it/500x300';				
+				?>
+				<li>
+				    <div class="thumb">
+				        <a href="#">
+				            <img src="<?php echo $img_sm; ?>" width="200" height="125" alt="<?php echo $p->post_title; ?>"/>
+				        </a>
+				        <a href="<?php echo $img_lg; ?>" data-rel="prettyPhoto[mixed]" title="This is title of image" class="zoom first_icon"></a>
+				    </div>
+				</li>
+				<?php
+			}
+			?>
+		</ul>
+		<?php	
+		$var = ob_get_contents();
+	    ob_end_clean();
+	    return $var;
+	}
+	return '';
+}
+
+/**
  * SHORT CODE. [faq]
  * Display faq items.
  * @param  array $args --- shortcode parameters
@@ -470,8 +544,8 @@ function shortcodeDisplayProducts($args, $content = '')
 
 	if(!$items) return;	
 	foreach ($items as &$item) 
-	{
-		$thead .= sprintf('<td><h1>%s</h1><span class="pricing"><strong>$%s</strong><br>/MO</span></td>', $item->post_title, $item->meta['product_price']);
+	{		
+		$thead .= sprintf('<td><h1>%s</h1><span class="pricing pricefont-%s"><strong>$%s</strong></span></td>', $item->post_title, strlen($item->meta['product_price']), $item->meta['product_price']);
 		$tbody .= sprintf('<td class="text-padding">%s</td>', $item->post_content);
 		$bottom.= sprintf('<td><a class="button button-black buy" data-id="%s" href="#">Choose plan</a> </td>', $item->ID);
 	}
@@ -565,4 +639,17 @@ function getUsersSelect($users, $name='user-select')
 		$out.= sprintf('<option value="%s">%s</option>', $user->id, $user->display_name);
 	}
 	return sprintf('<select name="%s" id="%s">%s</select>', $name, $name, $out);
+}
+
+/**
+ * Get only image src
+ * @param  integer $id  --- post id
+ * @param  string $size --- size name
+ * @return string       --- image src
+ */
+function getImgSrc($id, $size)
+{
+	if(!has_post_thumbnail($id)) return false;
+	$res = wp_get_attachment_image_src(get_post_thumbnail_id($id), $size);
+	return $res[0];
 }

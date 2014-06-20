@@ -37,8 +37,45 @@ class PageFactory{
         // =========================================================
         // HOOK'S
         // =========================================================
-        add_action('admin_menu', array($this, 'addPage'));        
-        wp_enqueue_style('font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css');
+        add_action('admin_menu', array($this, 'addPage'));  
+        add_action('admin_print_scripts', array(&$this, 'adminScripts'));      
+        wp_enqueue_style('font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
+    }
+
+    /**
+     * Add some script's to admin panel
+     */
+    public function adminScripts()
+    {
+        ?>
+        <script>
+            function setPhoto(obj)
+            {
+                var input    = jQuery('#' + jQuery(obj).attr('data-name'));
+                var input_id = jQuery('#' + jQuery(obj).attr('data-name') + '_id');
+                tb_show('Load images', 'media-upload.php?type=image&amp;TB_iframe=true');
+
+                window.send_to_editor = function(html) {
+                    
+                    var imgurl       = jQuery('img', html).attr('src');
+                    var class_string = jQuery('img', html).attr('class');
+                    var classes      = class_string.split(/\s+/);
+                    var image_id     = 0;
+
+                    for ( var i = 0; i < classes.length; i++ ) {
+                        var source = classes[i].match(/wp-image-([0-9]+)/);
+                        if ( source && source.length > 1 ) {
+                            image_id = parseInt( source[1] );
+                        }
+                    }
+                    input.val(imgurl);
+                    input_id.val(image_id);
+                    tb_remove();
+                }
+                return false;
+            }
+        </script>
+        <?php
     }
 
     /**
@@ -247,7 +284,6 @@ class PageFactory{
      */
     public function sanitize($input)
     {
-
         $save = array();
         if(is_array($input))
         {
@@ -278,6 +314,7 @@ class PageFactory{
      */
     private function getSlug($name)
     {
+        $name = str_replace(array('(', ')'), '', $name);
         return strtolower(str_replace(' ', '_', $name));
     }
 
@@ -316,6 +353,16 @@ class PageFactory{
         return false;
     }
 
+    /**
+     * Helper function for checkbox control
+     * @param  boolean $yes --- checked or no
+     * @return string       --- checked="cheked" | empty
+     */
+    private function checked($yes)
+    {
+        return $yes ? 'checked="checked"' : '';
+    }
+
     // =========================================================
     // CONTROL TYPES
     // =========================================================
@@ -329,6 +376,38 @@ class PageFactory{
         printf('<input type="text" id="%s" class="regular-text" name="%s[%s][%s]" value="%s" />', $args['slug'], $this->option_name, $args['section_slug'], $args['slug'], $args['value']);
     }
 
+    /**
+     * CHECKBOX TYPE
+     * @param  array $args --- control properties
+     */
+    public function controlCheckbox($args)
+    {      
+        printf('<input type="checkbox" id="%1$s" class="widefat" name="%2$s[%3$s][%1$s]" %4$s/>', $args['slug'], $this->option_name, $args['section_slug'], $this->checked(!empty($args['value'])));
+    }
+
+    public function controlImage($args)
+    {
+        $defaults = array('id' => 0, 'url' => '');
+        $args     = array_merge($defaults, $args);
+
+        if($args['value']['id'] != 0)
+        {
+            echo wp_get_attachment_image($args['value']['id'], 'medium', 0, array('style' => 'display: block;'));
+        }
+        printf('<input type="hidden" id="%1$s_id" name="%2$s[%3$s][%1$s][id]" value="%4$s">', $args['slug'], $this->option_name, $args['section_slug'], intval($args['value']['id']));
+        printf('<input type="text" id="%1$s" class="regular-text" name="%2$s[%3$s][%1$s][url]" value="%4$s" />', $args['slug'], $this->option_name, $args['section_slug'], $args['value']['url']);
+        printf('<button type="button" onclick="setPhoto(this);" data-name="%1$s" class="button">%2$s</button>', $args['slug'], __('Upload'));
+    }
+
+    /**
+     * Textarea TYPE
+     * @param  array $args --- control properties
+     */
+    public function controlTextarea($args)
+    {
+        printf('<textarea id="%3$s" name="%1$s[%2$s][%3$s]" class="large-text" cols="50" rows="10">%4$s</textarea>', $this->option_name, $args['section_slug'], $args['slug'], $args['value']);
+    }
+
     // =========================================================
     // CHECK TYPES
     // =========================================================
@@ -336,5 +415,21 @@ class PageFactory{
     private function checkText($value)
     {
         return trim(strip_tags($value));
+    }
+
+    private function checkTextarea($value)
+    {
+        return trim($value);
+    }
+
+    private function checkCheckbox($value)
+    {
+        return $value;
+    }
+
+    private function checkImage($value)
+    {
+        if($value['url'] == '') return array('url' => '', 'id' => 0);
+        return $value;
     }
 }
