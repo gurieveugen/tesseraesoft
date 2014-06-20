@@ -45,7 +45,7 @@ $basic_requirements_html = explode("\n", $basic_requirements_html);
 
 <!--features starts-->
 <div class="grid_12 features_style2">
-    <h2>Few reasons why you'll love softone</h2>
+    <h2>Few reasons why you'll love Tesserae</h2>
     <!-- <div class="grid_4 first">
         <h4>Clean design</h4>
         <img src="<?php echo TDU; ?>/images/icons/features/feature-icon-9.png" width="64" height="64" alt="icon">
